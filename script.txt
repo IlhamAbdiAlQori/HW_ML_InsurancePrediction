@@ -1,0 +1,74 @@
+# di ubah ke notepad dikarenakan ketika di upload jadi tidak terbaca di github, sudah beberapa kali push dari sebelom waktu habis sampai waktu sudah habis tapi tetap sama saja wkwk
+
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import pickle
+import gzip
+import os
+
+data = pd.read_csv('Prediction Insurance.csv')
+print(data.head(5))
+
+
+
+
+
+
+
+label_encoder = LabelEncoder()
+data['Gender'] = label_encoder.fit_transform(data['Gender'])
+data['Vehicle_Age'] = label_encoder.fit_transform(data['Vehicle_Age'])
+data['Vehicle_Damage'] = label_encoder.fit_transform(data['Vehicle_Damage'])
+
+X = data.drop(columns=['id', 'Response'])
+y = data['Response']
+
+train_features, test_features, train_labels, test_labels = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+
+
+
+
+
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(train_features, train_labels)
+
+# prediksi data test_features
+predicted_labels = model.predict(test_features)
+
+# kalkulasi akurasi
+accuracy = accuracy_score(test_labels, predicted_labels)
+print(f'Akurasi: {accuracy:.2f}')
+
+
+
+
+
+
+
+# simpen model jadi pickle
+pickle_file_path = os.path.join(os.getcwd(), 'insurance_model.pkl')
+with open(pickle_file_path, 'wb') as file:
+    pickle.dump(model, file)
+
+# konfirmasi apakah bisa tersave apa nggak
+if os.path.exists(pickle_file_path):
+    print(f'Model saved successfully at {pickle_file_path}')
+else:
+    print('Error: Model not saved')
+
+
+
+
+
+
+
+with gzip.open('insurance_model.pkl.gz', 'wb') as f:
+    pickle.dump(model, f)
+
+os.remove('insurance_model.pkl')
